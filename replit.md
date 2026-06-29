@@ -1,36 +1,43 @@
-# [Project name]
+# ClearSpeak AI
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+Tools to help autistic teens understand figurative language, confusing conversations, and unclear social moments.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `pnpm --filter @workspace/clearspeak run dev` — run the frontend (port assigned by workflow)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+- Required env: `GROQ_API_KEY` — Groq API key for AI-powered explanations (optional; app degrades gracefully without it)
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
+- Frontend: React + Vite + Tailwind CSS v4 + wouter routing
 - API: Express 5
-- DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- AI: Groq API (llama-3.3-70b-versatile) via REST
+- No database needed (stateless AI calls)
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/clearspeak/src/pages/` — page components (home, literalizer, situations, conversation-helper)
+- `artifacts/clearspeak/src/App.tsx` — wouter routing
+- `artifacts/api-server/src/routes/llm.ts` — Groq LLM API route (`POST /api/llm`)
+- `artifacts/api-server/src/routes/index.ts` — route registry
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- Next.js converted to Vite + React; `next/link` replaced with wouter `<Link>`; `next/image` not used in this project
+- The original Next.js API route (`app/api/llm/route.ts`) is now an Express route at `/api/llm`
+- Groq called via raw `fetch` (no SDK dependency on server) — keeps the bundle small
+- App gracefully degrades if `GROQ_API_KEY` is not set — shows a helper message instead of crashing
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Three AI-powered tools for autistic teens:
+1. **Fill-in-the-Blank Literal Meaning Tool** — explains what figurative phrases actually mean
+2. **Common Situations & Clear Explanations** — pre-loaded + custom social situation explanations
+3. **Conversation Breakdown Helper** — breaks down confusing conversations by intent and emotion
 
 ## User preferences
 
@@ -38,7 +45,9 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
+- `GROQ_API_KEY` must be added as a Replit secret to enable real AI responses
+- Do NOT run `pnpm dev` at workspace root — use `restart_workflow` or the workflow panel
+- The `fullstack_copy_frontend.sh` script does not support Next.js `app/` directory layouts — port pages manually
 
 ## Pointers
 
