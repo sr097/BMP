@@ -1,6 +1,21 @@
 import { Router, type IRouter } from "express";
+import rateLimit from "express-rate-limit";
 
 const router: IRouter = Router();
+
+const MAX_PROMPT_LENGTH = 2000;
+
+const llmLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 10,
+  standardHeaders: "draft-7",
+  legacyHeaders: false,
+  message: {
+    success: false,
+    error: "rate_limited",
+    response: "Too many requests. Please wait a moment and try again.",
+  },
+});
 
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 const GROQ_MODEL = "llama-3.3-70b-versatile";
@@ -12,9 +27,37 @@ router.get("/llm/health", (_req, res) => {
   res.json({ ready: hasKey, model: hasKey ? GROQ_MODEL : null });
 });
 
-router.post("/llm", async (req, res) => {
+router.post("/llm", llmLimiter, async (req, res) => {
   try {
-    const userPrompt = req.body?.prompt || "Hello!";
+    if (!req.isAuthenticated()) {
+      res.status(401).json({
+        success: false,
+        error: "unauthenticated",
+        response: "You must be logged in to use this tool.",
+      });
+      return;
+    }
+
+    const rawPrompt = req.body?.prompt;
+    if (typeof rawPrompt !== "string" || rawPrompt.trim().length === 0) {
+      res.status(400).json({
+        success: false,
+        error: "invalid_prompt",
+        response: "Please provide a text prompt.",
+      });
+      return;
+    }
+
+    if (rawPrompt.length > MAX_PROMPT_LENGTH) {
+      res.status(400).json({
+        success: false,
+        error: "prompt_too_long",
+        response: `Prompt must be ${MAX_PROMPT_LENGTH} characters or fewer.`,
+      });
+      return;
+    }
+
+    const userPrompt = rawPrompt.trim();
 
     const groqApiKey = process.env.GROQ_API_KEY;
     if (!groqApiKey) {
