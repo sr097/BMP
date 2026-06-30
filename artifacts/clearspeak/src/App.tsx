@@ -41,13 +41,16 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
         <h1 className="text-3xl font-bold text-sky-700 mb-2 tracking-tight">ClearSpeak AI</h1>
         <p className="text-sky-500 font-medium mb-2 text-sm">Clear explanations for confusing moments.</p>
         <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-          Sign in to access your tools. Your conversations stay private.
+          Sign in with your Google account to access your tools. Your conversations stay private.
         </p>
         <button
           onClick={onLogin}
-          className="w-full bg-sky-500 text-white py-4 rounded-xl hover:bg-sky-600 transition font-semibold text-base shadow-sm"
+          className="w-full bg-sky-500 text-white py-4 rounded-xl hover:bg-sky-600 transition font-semibold text-base shadow-sm flex items-center justify-center gap-2"
         >
-          Sign in to continue
+          <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.5-4z"/>
+          </svg>
+          Sign in with Google
         </button>
       </div>
     </main>
