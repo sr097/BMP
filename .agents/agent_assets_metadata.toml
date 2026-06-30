@@ -1,0 +1,8 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "Gb-o30UzZ-jqB_hGVE_17"
+uri = "file://artifacts/clearspeak-mobile/assets/images/icon.png"
+type = "image"
+title = "clearspeak icon"
