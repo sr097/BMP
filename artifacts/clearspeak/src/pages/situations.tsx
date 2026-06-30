@@ -64,11 +64,11 @@ const COMMON_SITUATIONS = [
   },
 ];
 
-const CATEGORY_COLORS: Record<string, { border: string; bg: string; header: string; chevron: string }> = {
-  "Job Interviews":     { border: "border-blue-200",   bg: "bg-blue-50",   header: "text-blue-700",   chevron: "text-blue-400" },
-  "Task Transitions":   { border: "border-orange-200", bg: "bg-orange-50", header: "text-orange-700", chevron: "text-orange-400" },
-  "Workplace & School": { border: "border-green-200",  bg: "bg-green-50",  header: "text-green-700",  chevron: "text-green-400" },
-  "Social Situations":  { border: "border-purple-200", bg: "bg-purple-50", header: "text-purple-700", chevron: "text-purple-400" },
+const CATEGORY_COLORS: Record<string, { border: string; bg: string; header: string; chevron: string; hover: string }> = {
+  "Job Interviews":     { border: "border-slate-200",  bg: "bg-slate-50",  header: "text-slate-500",  chevron: "text-slate-400",  hover: "hover:bg-slate-50"  },
+  "Task Transitions":   { border: "border-amber-200",  bg: "bg-amber-50",  header: "text-amber-600",  chevron: "text-amber-400",  hover: "hover:bg-amber-50"  },
+  "Workplace & School": { border: "border-teal-200",   bg: "bg-teal-50",   header: "text-teal-600",   chevron: "text-teal-400",   hover: "hover:bg-teal-50"   },
+  "Social Situations":  { border: "border-indigo-200", bg: "bg-indigo-50", header: "text-indigo-600", chevron: "text-indigo-400", hover: "hover:bg-indigo-50" },
 };
 
 export default function Situations() {
@@ -108,13 +108,13 @@ export default function Situations() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-purple-50 p-8">
-      <div className="bg-white shadow-lg rounded-xl p-10 max-w-xl w-full">
-        <Link href="/" className="text-purple-500 hover:underline text-sm mb-4 block">
+    <main className="flex min-h-screen flex-col items-center bg-stone-100 p-8">
+      <div className="bg-stone-50 shadow-md rounded-xl p-10 max-w-xl w-full border border-stone-200">
+        <Link href="/" className="text-slate-400 hover:text-slate-600 text-sm mb-4 block transition">
           ← Back to home
         </Link>
-        <h1 className="text-2xl font-bold mb-2 text-purple-600">Common Situations &amp; Clear Explanations</h1>
-        <p className="text-gray-600 mb-6 text-sm">
+        <h1 className="text-2xl font-bold mb-2 text-indigo-700">Common Situations &amp; Clear Explanations</h1>
+        <p className="text-stone-500 mb-6 text-sm leading-relaxed">
           Tap a situation to see a clear explanation, or describe your own.
         </p>
 
@@ -129,14 +129,14 @@ export default function Situations() {
                   {items.map(({ title, explanation, i }) => (
                     <div key={i} className={`border ${colors.border} rounded-lg overflow-hidden`}>
                       <button
-                        className={`w-full text-left px-4 py-3 font-medium text-gray-800 hover:${colors.bg} transition flex justify-between items-center`}
+                        className={`w-full text-left px-4 py-3 font-medium text-stone-700 ${colors.hover} transition flex justify-between items-center`}
                         onClick={() => setExpanded(expanded === i ? null : i)}
                       >
                         <span className="pr-2">{title}</span>
                         <span className={`${colors.chevron} ml-2 shrink-0`}>{expanded === i ? "▲" : "▼"}</span>
                       </button>
                       {expanded === i && (
-                        <div className={`px-4 py-3 ${colors.bg} text-gray-700 text-sm leading-relaxed border-t ${colors.border}`}>
+                        <div className={`px-4 py-3 ${colors.bg} text-stone-600 text-sm leading-relaxed border-t ${colors.border}`}>
                           {explanation}
                         </div>
                       )}
@@ -148,32 +148,32 @@ export default function Situations() {
           })}
         </div>
 
-        <hr className="my-6 border-purple-100" />
+        <hr className="my-6 border-stone-200" />
 
-        <h2 className="text-lg font-semibold text-purple-600 mb-3">Describe your own situation</h2>
+        <h2 className="text-lg font-semibold text-indigo-700 mb-3">Describe your own situation</h2>
         <form onSubmit={handleCustom} className="flex flex-col gap-4">
           <textarea
             value={custom}
             onChange={(e) => setCustom(e.target.value)}
             placeholder="Describe a confusing social situation you experienced…"
             rows={3}
-            className="border border-gray-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-purple-400 resize-none"
+            className="border border-stone-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none bg-white text-stone-700 placeholder:text-stone-400"
           />
           <button
             type="submit"
             disabled={loading || !custom.trim()}
-            className="bg-purple-500 text-white py-3 rounded-lg hover:bg-purple-600 transition disabled:opacity-50"
+            className="bg-indigo-700 text-stone-100 py-3 rounded-lg hover:bg-indigo-800 transition disabled:opacity-40 font-medium"
           >
             {loading ? "Thinking…" : "Explain this situation"}
           </button>
         </form>
 
         {error && (
-          <div className="mt-6 p-4 bg-red-50 rounded-lg text-red-600 text-sm">{error}</div>
+          <div className="mt-6 p-4 bg-amber-50 rounded-lg text-amber-700 text-sm border border-amber-200">{error}</div>
         )}
 
         {customResult && (
-          <div className="mt-6 p-4 bg-purple-50 rounded-lg text-gray-700 whitespace-pre-wrap text-sm leading-relaxed">
+          <div className="mt-6 p-4 bg-indigo-50 rounded-lg text-stone-600 whitespace-pre-wrap text-sm leading-relaxed border border-indigo-200">
             {customResult}
           </div>
         )}
