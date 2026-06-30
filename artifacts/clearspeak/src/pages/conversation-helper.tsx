@@ -46,7 +46,13 @@ const TYPE_OPTIONS = [
   "a short one-word or one-sentence reply",
 ];
 
-function buildTemplatePrompt(who: string, felt: string, where: string, type: string, extra: string) {
+function buildTemplatePrompt(
+  who: string,
+  felt: string,
+  where: string,
+  type: string,
+  extra: string,
+) {
   let prompt = `An autistic teen experienced a confusing social moment. Here are the details:\n\n`;
   prompt += `- The other person was: ${who}\n`;
   prompt += `- It happened: ${where}\n`;
@@ -84,14 +90,23 @@ export default function ConversationHelper() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(
+          data?.response || `Request failed (${res.status}). Please try again.`,
+        );
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setResult(data.response);
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(data.response || "Something went wrong. Please try again.");
       }
     } catch {
-      setError("Could not connect. Please try again.");
+      setError(
+        "Could not connect. Please check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -107,7 +122,7 @@ export default function ConversationHelper() {
     e.preventDefault();
     if (!conversation.trim()) return;
     callApi(
-      `An autistic teen is confused by this conversation or exchange:\n\n"${conversation}"\n\nPlease break it down clearly:\n1. What each person probably meant (not just what they said)\n2. What emotions or intentions were likely behind the words\n3. Any hidden social rules or expectations at play\n4. Suggested ways to respond or what to do next`
+      `An autistic teen is confused by this conversation or exchange:\n\n"${conversation}"\n\nPlease break it down clearly:\n1. What each person probably meant (not just what they said)\n2. What emotions or intentions were likely behind the words\n3. Any hidden social rules or expectations at play\n4. Suggested ways to respond or what to do next`,
     );
   }
 
@@ -120,10 +135,15 @@ export default function ConversationHelper() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-emerald-50 p-8">
       <div className="bg-white shadow-sm rounded-xl p-10 max-w-xl w-full border border-emerald-100">
-        <Link href="/" className="text-emerald-400 hover:text-emerald-600 text-sm mb-4 block transition">
+        <Link
+          href="/"
+          className="text-emerald-400 hover:text-emerald-600 text-sm mb-4 block transition"
+        >
           ← Back to home
         </Link>
-        <h1 className="text-2xl font-bold mb-1 text-emerald-700">Conversation Breakdown Helper</h1>
+        <h1 className="text-2xl font-bold mb-1 text-emerald-700">
+          Conversation Breakdown Helper
+        </h1>
         <p className="text-slate-500 mb-2 text-sm leading-relaxed">
           We'll explain the tone, hidden emotions, and what to do next.
         </p>
@@ -154,60 +174,88 @@ export default function ConversationHelper() {
         {mode === "template" ? (
           <>
             <p className="text-xs text-slate-400 mb-4 bg-emerald-50 border border-emerald-100 rounded-lg px-3 py-2 leading-relaxed">
-              🔒 <strong>Privacy-safe:</strong> No names or private details needed — just pick what fits.
+              🔒 <strong>Privacy-safe:</strong> No names or private details
+              needed — just pick what fits.
             </p>
             <form onSubmit={handleTemplate} className="flex flex-col gap-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">The person was…</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
+                  The person was…
+                </label>
                 <select
                   value={who}
                   onChange={(e) => setWho(e.target.value)}
                   className="w-full border-2 border-emerald-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-sm"
                 >
                   <option value="">Select…</option>
-                  {WHO_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {WHO_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">It happened…</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
+                  It happened…
+                </label>
                 <select
                   value={where}
                   onChange={(e) => setWhere(e.target.value)}
                   className="w-full border-2 border-emerald-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-sm"
                 >
                   <option value="">Select…</option>
-                  {WHERE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {WHERE_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">What they said/did felt…</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
+                  What they said/did felt…
+                </label>
                 <select
                   value={felt}
                   onChange={(e) => setFelt(e.target.value)}
                   className="w-full border-2 border-emerald-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-sm"
                 >
                   <option value="">Select…</option>
-                  {FELT_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {FELT_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">The type of thing they said was…</label>
+                <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
+                  The type of thing they said was…
+                </label>
                 <select
                   value={type}
                   onChange={(e) => setType(e.target.value)}
                   className="w-full border-2 border-emerald-200 rounded-lg px-3 py-2.5 text-sm text-slate-700 bg-white focus:outline-none focus:ring-2 focus:ring-emerald-300 shadow-sm"
                 >
                   <option value="">Select…</option>
-                  {TYPE_OPTIONS.map((o) => <option key={o} value={o}>{o}</option>)}
+                  {TYPE_OPTIONS.map((o) => (
+                    <option key={o} value={o}>
+                      {o}
+                    </option>
+                  ))}
                 </select>
               </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-500 mb-1 uppercase tracking-wide">
-                  Anything else? <span className="text-slate-400 font-normal normal-case">(optional — no names needed)</span>
+                  Anything else?{" "}
+                  <span className="text-slate-400 font-normal normal-case">
+                    (optional — no names needed)
+                  </span>
                 </label>
                 <input
                   type="text"
@@ -232,13 +280,16 @@ export default function ConversationHelper() {
         ) : (
           <>
             <p className="text-xs text-slate-400 mb-4 bg-sky-50 border border-sky-100 rounded-lg px-3 py-2 leading-relaxed">
-              ✏️ Type or paste a conversation. You can use fake names or leave names out entirely.
+              ✏️ Type or paste a conversation. You can use fake names or leave
+              names out entirely.
             </p>
             <form onSubmit={handleFreeText} className="flex flex-col gap-5">
               <textarea
                 value={conversation}
                 onChange={(e) => setConversation(e.target.value)}
-                placeholder={'Example:\nFriend: "Fine, whatever."\nMe: "Are you sure?"\nFriend: "Yes, it\'s fine." (but seemed upset)'}
+                placeholder={
+                  'Example:\nFriend: "Fine, whatever."\nMe: "Are you sure?"\nFriend: "Yes, it\'s fine." (but seemed upset)'
+                }
                 rows={5}
                 className="border-2 border-emerald-200 shadow-md rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none font-mono text-sm bg-white text-slate-700 placeholder:text-slate-400"
               />
@@ -248,7 +299,9 @@ export default function ConversationHelper() {
                   disabled={loading || !conversation.trim()}
                   className="bg-emerald-600 text-white px-10 py-4 rounded-xl hover:bg-emerald-700 transition disabled:opacity-40 font-semibold text-base shadow-sm"
                 >
-                  {loading ? "Breaking it down…" : "Break down this conversation"}
+                  {loading
+                    ? "Breaking it down…"
+                    : "Break down this conversation"}
                 </button>
               </div>
             </form>
@@ -256,7 +309,9 @@ export default function ConversationHelper() {
         )}
 
         {error && (
-          <div className="mt-6 p-4 bg-amber-50 rounded-lg text-amber-700 text-sm border border-amber-200">{error}</div>
+          <div className="mt-6 p-4 bg-amber-50 rounded-lg text-amber-700 text-sm border border-amber-200">
+            {error}
+          </div>
         )}
 
         {result && (

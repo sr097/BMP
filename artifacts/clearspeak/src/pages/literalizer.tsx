@@ -21,14 +21,23 @@ export default function Literalizer() {
           prompt: `A teen with autism is trying to understand this figurative phrase: "${phrase}"\n\nExplain what it LITERALLY means versus what it ACTUALLY means in plain, simple language. Format your answer clearly with two parts:\n1. What it sounds like it means (literally)\n2. What it actually means`,
         }),
       });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        setError(
+          data?.response || `Request failed (${res.status}). Please try again.`,
+        );
+        return;
+      }
       const data = await res.json();
       if (data.success) {
         setResult(data.response);
       } else {
-        setError("Something went wrong. Please try again.");
+        setError(data.response || "Something went wrong. Please try again.");
       }
     } catch {
-      setError("Could not connect. Please try again.");
+      setError(
+        "Could not connect. Please check your connection and try again.",
+      );
     } finally {
       setLoading(false);
     }
@@ -37,12 +46,18 @@ export default function Literalizer() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-sky-50 p-8">
       <div className="bg-white shadow-sm rounded-xl p-10 max-w-xl w-full border border-sky-100">
-        <Link href="/" className="text-sky-400 hover:text-sky-600 text-sm mb-4 block transition">
+        <Link
+          href="/"
+          className="text-sky-400 hover:text-sky-600 text-sm mb-4 block transition"
+        >
           ← Back to home
         </Link>
-        <h1 className="text-2xl font-bold mb-2 text-sky-700">Fill‑in‑the‑Blank Literal Meaning Tool</h1>
+        <h1 className="text-2xl font-bold mb-2 text-sky-700">
+          Fill‑in‑the‑Blank Literal Meaning Tool
+        </h1>
         <p className="text-slate-500 mb-6 text-sm leading-relaxed">
-          Enter a confusing phrase or expression, and we'll explain what it really means.
+          Enter a confusing phrase or expression, and we'll explain what it
+          really means.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
           <input
@@ -62,7 +77,9 @@ export default function Literalizer() {
         </form>
 
         {error && (
-          <div className="mt-6 p-4 bg-amber-50 rounded-lg text-amber-700 text-sm border border-amber-200">{error}</div>
+          <div className="mt-6 p-4 bg-amber-50 rounded-lg text-amber-700 text-sm border border-amber-200">
+            {error}
+          </div>
         )}
 
         {result && (
