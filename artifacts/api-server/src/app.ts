@@ -1,4 +1,9 @@
-import express, { type Express } from "express";
+import express, {
+  type Express,
+  type Request,
+  type Response,
+  type NextFunction,
+} from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
@@ -52,5 +57,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(authMiddleware);
 
 app.use("/api", router);
+
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
+  req.log.error({ err }, "Unhandled error in request pipeline");
+  if (!res.headersSent) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 export default app;

@@ -51,7 +51,11 @@ function setOidcCookie(res: Response, name: string, value: string) {
 }
 
 function getSafeReturnTo(value: unknown): string {
-  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) {
+  if (
+    typeof value !== "string" ||
+    !value.startsWith("/") ||
+    value.startsWith("//")
+  ) {
     return "/";
   }
   return value;
@@ -91,38 +95,51 @@ router.get("/auth/user", (req: Request, res: Response) => {
 });
 
 router.get("/login", async (req: Request, res: Response) => {
-  const config = await getOidcConfig();
-  const callbackUrl = `${getOrigin(req)}/api/callback`;
+  try {
+    const config = await getOidcConfig();
+    const callbackUrl = `${getOrigin(req)}/api/callback`;
 
-  const returnTo = getSafeReturnTo(req.query.returnTo);
+    const returnTo = getSafeReturnTo(req.query.returnTo);
 
-  const state = oidc.randomState();
-  const nonce = oidc.randomNonce();
-  const codeVerifier = oidc.randomPKCECodeVerifier();
-  const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
+    const state = oidc.randomState();
+    const nonce = oidc.randomNonce();
+    const codeVerifier = oidc.randomPKCECodeVerifier();
+    const codeChallenge = await oidc.calculatePKCECodeChallenge(codeVerifier);
 
-  const redirectTo = oidc.buildAuthorizationUrl(config, {
-    redirect_uri: callbackUrl,
-    scope: "openid email profile offline_access",
-    code_challenge: codeChallenge,
-    code_challenge_method: "S256",
-    prompt: "login consent",
-    state,
-    nonce,
-  });
+    const redirectTo = oidc.buildAuthorizationUrl(config, {
+      redirect_uri: callbackUrl,
+      scope: "openid email profile offline_access",
+      code_challenge: codeChallenge,
+      code_challenge_method: "S256",
+      prompt: "login consent",
+      state,
+      nonce,
+    });
 
-  setOidcCookie(res, "code_verifier", codeVerifier);
-  setOidcCookie(res, "nonce", nonce);
-  setOidcCookie(res, "state", state);
-  setOidcCookie(res, "return_to", returnTo);
+    setOidcCookie(res, "code_verifier", codeVerifier);
+    setOidcCookie(res, "nonce", nonce);
+    setOidcCookie(res, "state", state);
+    setOidcCookie(res, "return_to", returnTo);
 
-  res.redirect(redirectTo.href);
+    res.redirect(redirectTo.href);
+  } catch (err) {
+    req.log.error({ err }, "Failed to initiate login flow");
+    res.status(500).json({ error: "Failed to initiate login" });
+  }
 });
 
 // Query params are not validated because the OIDC provider may include
 // parameters not expressed in the schema.
 router.get("/callback", async (req: Request, res: Response) => {
-  const config = await getOidcConfig();
+  let config;
+  try {
+    config = await getOidcConfig();
+  } catch (err) {
+    req.log.error({ err }, "Failed to load OIDC config during callback");
+    res.redirect("/api/login");
+    return;
+  }
+
   const callbackUrl = `${getOrigin(req)}/api/callback`;
 
   const codeVerifier = req.cookies?.code_verifier;
@@ -146,7 +163,8 @@ router.get("/callback", async (req: Request, res: Response) => {
       expectedState,
       idTokenExpected: true,
     });
-  } catch {
+  } catch (err) {
+    req.log.error({ err }, "OIDC authorization code grant failed");
     res.redirect("/api/login");
     return;
   }
@@ -164,9 +182,14 @@ router.get("/callback", async (req: Request, res: Response) => {
     return;
   }
 
-  const dbUser = await upsertUser(
-    claims as unknown as Record<string, unknown>,
-  );
+  let dbUser;
+  try {
+    dbUser = await upsertUser(claims as unknown as Record<string, unknown>);
+  } catch (err) {
+    req.log.error({ err }, "Failed to upsert user during OIDC callback");
+    res.status(500).json({ error: "Failed to complete authentication" });
+    return;
+  }
 
   const now = Math.floor(Date.now() / 1000);
   const sessionData: SessionData = {
@@ -182,24 +205,34 @@ router.get("/callback", async (req: Request, res: Response) => {
     expires_at: tokens.expiresIn() ? now + tokens.expiresIn()! : claims.exp,
   };
 
-  const sid = await createSession(sessionData);
-  setSessionCookie(res, sid);
-  res.redirect(returnTo);
+  try {
+    const sid = await createSession(sessionData);
+    setSessionCookie(res, sid);
+    res.redirect(returnTo);
+  } catch (err) {
+    req.log.error({ err }, "Failed to create session during OIDC callback");
+    res.status(500).json({ error: "Failed to complete authentication" });
+  }
 });
 
 router.get("/logout", async (req: Request, res: Response) => {
-  const config = await getOidcConfig();
-  const origin = getOrigin(req);
+  try {
+    const config = await getOidcConfig();
+    const origin = getOrigin(req);
 
-  const sid = getSessionId(req);
-  await clearSession(res, sid);
+    const sid = getSessionId(req);
+    await clearSession(res, sid);
 
-  const endSessionUrl = oidc.buildEndSessionUrl(config, {
-    client_id: process.env.REPL_ID!,
-    post_logout_redirect_uri: origin,
-  });
+    const endSessionUrl = oidc.buildEndSessionUrl(config, {
+      client_id: process.env.REPL_ID!,
+      post_logout_redirect_uri: origin,
+    });
 
-  res.redirect(endSessionUrl.href);
+    res.redirect(endSessionUrl.href);
+  } catch (err) {
+    req.log.error({ err }, "Logout failed");
+    res.status(500).json({ error: "Logout failed" });
+  }
 });
 
 router.post(
@@ -262,11 +295,16 @@ router.post(
 );
 
 router.post("/mobile-auth/logout", async (req: Request, res: Response) => {
-  const sid = getSessionId(req);
-  if (sid) {
-    await deleteSession(sid);
+  try {
+    const sid = getSessionId(req);
+    if (sid) {
+      await deleteSession(sid);
+    }
+    res.json(LogoutMobileSessionResponse.parse({ success: true }));
+  } catch (err) {
+    req.log.error({ err }, "Mobile logout failed");
+    res.status(500).json({ error: "Logout failed" });
   }
-  res.json(LogoutMobileSessionResponse.parse({ success: true }));
 });
 
 export default router;

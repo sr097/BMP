@@ -1,6 +1,7 @@
 import * as oidc from "openid-client";
 import { type Request, type Response, type NextFunction } from "express";
 import type { AuthUser } from "@workspace/api-zod";
+import { logger } from "../lib/logger";
 import {
   clearSession,
   getOidcConfig,
@@ -37,10 +38,7 @@ async function refreshIfExpired(
 
   try {
     const config = await getOidcConfig();
-    const tokens = await oidc.refreshTokenGrant(
-      config,
-      session.refresh_token,
-    );
+    const tokens = await oidc.refreshTokenGrant(config, session.refresh_token);
     session.access_token = tokens.access_token;
     session.refresh_token = tokens.refresh_token ?? session.refresh_token;
     session.expires_at = tokens.expiresIn()
@@ -48,7 +46,8 @@ async function refreshIfExpired(
       : session.expires_at;
     await updateSession(sid, session);
     return session;
-  } catch {
+  } catch (err) {
+    logger.warn({ err, sid }, "Failed to refresh expired session token");
     return null;
   }
 }
@@ -68,20 +67,25 @@ export async function authMiddleware(
     return;
   }
 
-  const session = await getSession(sid);
-  if (!session?.user?.id) {
-    await clearSession(res, sid);
-    next();
-    return;
-  }
+  try {
+    const session = await getSession(sid);
+    if (!session?.user?.id) {
+      await clearSession(res, sid);
+      next();
+      return;
+    }
 
-  const refreshed = await refreshIfExpired(sid, session);
-  if (!refreshed) {
-    await clearSession(res, sid);
-    next();
-    return;
-  }
+    const refreshed = await refreshIfExpired(sid, session);
+    if (!refreshed) {
+      await clearSession(res, sid);
+      next();
+      return;
+    }
 
-  req.user = refreshed.user;
-  next();
+    req.user = refreshed.user;
+    next();
+  } catch (err) {
+    req.log.error({ err, sid }, "Auth middleware failed to resolve session");
+    next();
+  }
 }
