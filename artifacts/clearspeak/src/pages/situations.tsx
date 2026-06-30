@@ -3,26 +3,73 @@ import { Link } from "wouter";
 
 const COMMON_SITUATIONS = [
   {
+    category: "Job Interviews",
+    title: "Interviewer says \"Tell me about yourself\"",
+    explanation: "They don't want your entire life story. They want a short summary (1–2 minutes) of: what you're good at, what kind of work or school experience you have, and why you're interested in this job. Stick to things related to the job. Practice a short answer ahead of time so it feels natural.",
+  },
+  {
+    category: "Job Interviews",
+    title: "Interviewer asks \"What's your biggest weakness?\"",
+    explanation: "They're not trying to trick you. They want to see that you understand yourself and are willing to grow. Pick something real but not critical to the job, and explain what you're doing to improve it. Example: \"I sometimes take longer to start tasks because I want to do them perfectly, but I've been using timers to help me get started.\"",
+  },
+  {
+    category: "Job Interviews",
+    title: "They say \"We'll be in touch\" at the end of the interview",
+    explanation: "This doesn't mean yes or no — it just means they'll contact you later. It's polite to send a short thank-you email within 24 hours. If you haven't heard back after a week, it's okay to send one follow-up email asking about the status.",
+  },
+  {
+    category: "Task Transitions",
+    title: "A supervisor says \"When you get a chance, can you…\"",
+    explanation: "Even though this sounds optional, it usually means they want it done soon — just not urgently. A good rule: treat it as something to do within the same day or by end of the next day. If you're not sure, it's fine to ask: \"Should I do that before [current task] or after?\"",
+  },
+  {
+    category: "Task Transitions",
+    title: "Your schedule changes suddenly and you feel stuck",
+    explanation: "It's normal to feel overwhelmed when plans change unexpectedly. Try this: pause, take a breath, and ask \"What's the most important thing right now?\" If you're not sure, ask someone you trust. You don't have to figure it out alone — asking for clarity is always okay.",
+  },
+  {
+    category: "Task Transitions",
+    title: "You finish a task but don't know what to do next",
+    explanation: "This is a common moment of uncertainty. Check your task list or ask your supervisor: \"I just finished [task]. What would you like me to work on next?\" Having a ready-made question like this makes transitions much smoother.",
+  },
+  {
+    category: "Workplace & School",
+    title: "A coworker or classmate says \"Good job\" but it felt sarcastic",
+    explanation: "It can be hard to tell. Look for clues: did they smile? Was their voice flat or exaggerated? If you're genuinely unsure, assume it was sincere. If a pattern of unkind comments continues, it's okay to talk to a trusted adult or supervisor.",
+  },
+  {
+    category: "Workplace & School",
+    title: "Someone gives feedback on your work and it feels like an attack",
+    explanation: "Feedback about work is usually not about you as a person — it's about the task. Try to separate the two. If feedback is hard to hear, it's okay to say \"Thank you, I'll think about that\" and process it later. You don't have to respond right away.",
+  },
+  {
+    category: "Workplace & School",
+    title: "Everyone else seems to know what's happening but you don't",
+    explanation: "This happens to a lot of people and doesn't mean you missed something obvious. It's completely okay to ask: \"Can you catch me up on what we're doing?\" or \"I want to make sure I understand — could you explain that again?\" Asking questions is a sign of responsibility, not weakness.",
+  },
+  {
+    category: "Social Situations",
     title: "Someone says \"We should hang out sometime\"",
     explanation: "This usually means the person likes you and is being friendly, but they may not have a specific plan. It's often a polite way of saying they enjoy your company. You don't need to immediately set a date — you can say \"That sounds fun!\" and see if they follow up.",
   },
   {
-    title: "A teacher says \"You might want to check your work\"",
-    explanation: "This almost always means your work has mistakes. Teachers often soften criticism this way. You should go back and review what you did carefully.",
-  },
-  {
-    title: "Someone says \"Whatever\" during an argument",
-    explanation: "This usually means the person is frustrated and doesn't want to continue the conversation. It's not really about agreeing with you — they're signaling they want to stop talking about it.",
-  },
-  {
+    category: "Social Situations",
     title: "A friend says \"It's fine\" but seems upset",
-    explanation: "When someone says \"it's fine\" but their tone or body language says otherwise, they may actually be upset but not ready to talk about it. Give them some space, and you can check in later.",
+    explanation: "When someone says \"it's fine\" but their tone or body language says otherwise, they may actually be upset but not ready to talk about it. Give them some space and check in later with something like \"Hey, I just want to make sure you're okay.\"",
   },
   {
+    category: "Social Situations",
     title: "Someone says \"I'll think about it\"",
     explanation: "This could mean yes or no. Sometimes it means they genuinely need time to decide. Other times it's a polite way to say no without conflict. If it's important, it's okay to follow up once after a day or two.",
   },
 ];
+
+const CATEGORY_COLORS: Record<string, { border: string; bg: string; header: string; chevron: string }> = {
+  "Job Interviews":     { border: "border-blue-200",   bg: "bg-blue-50",   header: "text-blue-700",   chevron: "text-blue-400" },
+  "Task Transitions":   { border: "border-orange-200", bg: "bg-orange-50", header: "text-orange-700", chevron: "text-orange-400" },
+  "Workplace & School": { border: "border-green-200",  bg: "bg-green-50",  header: "text-green-700",  chevron: "text-green-400" },
+  "Social Situations":  { border: "border-purple-200", bg: "bg-purple-50", header: "text-purple-700", chevron: "text-purple-400" },
+};
 
 export default function Situations() {
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -30,6 +77,8 @@ export default function Situations() {
   const [customResult, setCustomResult] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const categories = Array.from(new Set(COMMON_SITUATIONS.map((s) => s.category)));
 
   async function handleCustom(e: React.FormEvent) {
     e.preventDefault();
@@ -69,23 +118,34 @@ export default function Situations() {
           Tap a situation to see a clear explanation, or describe your own.
         </p>
 
-        <div className="flex flex-col gap-3 mb-8">
-          {COMMON_SITUATIONS.map((s, i) => (
-            <div key={i} className="border border-purple-200 rounded-lg overflow-hidden">
-              <button
-                className="w-full text-left px-4 py-3 font-medium text-gray-800 hover:bg-purple-50 transition flex justify-between items-center"
-                onClick={() => setExpanded(expanded === i ? null : i)}
-              >
-                <span>{s.title}</span>
-                <span className="text-purple-400 ml-2">{expanded === i ? "▲" : "▼"}</span>
-              </button>
-              {expanded === i && (
-                <div className="px-4 py-3 bg-purple-50 text-gray-700 text-sm leading-relaxed border-t border-purple-100">
-                  {s.explanation}
+        <div className="flex flex-col gap-6 mb-8">
+          {categories.map((cat) => {
+            const colors = CATEGORY_COLORS[cat] ?? CATEGORY_COLORS["Social Situations"];
+            const items = COMMON_SITUATIONS.map((s, i) => ({ ...s, i })).filter((s) => s.category === cat);
+            return (
+              <div key={cat}>
+                <h2 className={`text-xs font-bold uppercase tracking-wider mb-2 ${colors.header}`}>{cat}</h2>
+                <div className="flex flex-col gap-2">
+                  {items.map(({ title, explanation, i }) => (
+                    <div key={i} className={`border ${colors.border} rounded-lg overflow-hidden`}>
+                      <button
+                        className={`w-full text-left px-4 py-3 font-medium text-gray-800 hover:${colors.bg} transition flex justify-between items-center`}
+                        onClick={() => setExpanded(expanded === i ? null : i)}
+                      >
+                        <span className="pr-2">{title}</span>
+                        <span className={`${colors.chevron} ml-2 shrink-0`}>{expanded === i ? "▲" : "▼"}</span>
+                      </button>
+                      {expanded === i && (
+                        <div className={`px-4 py-3 ${colors.bg} text-gray-700 text-sm leading-relaxed border-t ${colors.border}`}>
+                          {explanation}
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
         <hr className="my-6 border-purple-100" />
