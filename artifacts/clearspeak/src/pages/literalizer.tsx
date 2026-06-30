@@ -35,13 +35,13 @@ export default function Literalizer() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-stone-100 p-8">
-      <div className="bg-stone-50 shadow-md rounded-xl p-10 max-w-xl w-full border border-stone-200">
-        <Link href="/" className="text-slate-400 hover:text-slate-600 text-sm mb-4 block transition">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-sky-50 p-8">
+      <div className="bg-white shadow-sm rounded-xl p-10 max-w-xl w-full border border-sky-100">
+        <Link href="/" className="text-sky-400 hover:text-sky-600 text-sm mb-4 block transition">
           ← Back to home
         </Link>
-        <h1 className="text-2xl font-bold mb-2 text-slate-600">Fill‑in‑the‑Blank Literal Meaning Tool</h1>
-        <p className="text-stone-500 mb-6 text-sm leading-relaxed">
+        <h1 className="text-2xl font-bold mb-2 text-sky-700">Fill‑in‑the‑Blank Literal Meaning Tool</h1>
+        <p className="text-slate-500 mb-6 text-sm leading-relaxed">
           Enter a confusing phrase or expression, and we'll explain what it really means.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -50,12 +50,12 @@ export default function Literalizer() {
             value={phrase}
             onChange={(e) => setPhrase(e.target.value)}
             placeholder='e.g. "It&apos;s raining cats and dogs"'
-            className="border border-stone-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-slate-400 bg-white text-stone-700 placeholder:text-stone-400"
+            className="border border-sky-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-sky-300 bg-sky-50 text-slate-700 placeholder:text-slate-400"
           />
           <button
             type="submit"
             disabled={loading || !phrase.trim()}
-            className="bg-slate-500 text-stone-100 py-3 rounded-lg hover:bg-slate-600 transition disabled:opacity-40 font-medium"
+            className="bg-sky-500 text-white py-3 rounded-lg hover:bg-sky-600 transition disabled:opacity-40 font-medium"
           >
             {loading ? "Thinking…" : "Explain this phrase"}
           </button>
@@ -66,7 +66,7 @@ export default function Literalizer() {
         )}
 
         {result && (
-          <div className="mt-6 p-4 bg-slate-50 rounded-lg text-stone-600 whitespace-pre-wrap text-sm leading-relaxed border border-slate-200">
+          <div className="mt-6 p-4 bg-sky-50 rounded-lg text-slate-600 whitespace-pre-wrap text-sm leading-relaxed border border-sky-200">
             {result}
           </div>
         )}

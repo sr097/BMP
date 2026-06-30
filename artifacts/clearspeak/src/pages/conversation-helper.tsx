@@ -35,13 +35,13 @@ export default function ConversationHelper() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-stone-100 p-8">
-      <div className="bg-stone-50 shadow-md rounded-xl p-10 max-w-xl w-full border border-stone-200">
-        <Link href="/" className="text-slate-400 hover:text-slate-600 text-sm mb-4 block transition">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-emerald-50 p-8">
+      <div className="bg-white shadow-sm rounded-xl p-10 max-w-xl w-full border border-emerald-100">
+        <Link href="/" className="text-emerald-400 hover:text-emerald-600 text-sm mb-4 block transition">
           ← Back to home
         </Link>
-        <h1 className="text-2xl font-bold mb-2 text-teal-700">Conversation Breakdown Helper</h1>
-        <p className="text-stone-500 mb-6 text-sm leading-relaxed">
+        <h1 className="text-2xl font-bold mb-2 text-emerald-700">Conversation Breakdown Helper</h1>
+        <p className="text-slate-500 mb-6 text-sm leading-relaxed">
           Paste or type a conversation that confused you, and we'll break it down clearly.
         </p>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -50,12 +50,12 @@ export default function ConversationHelper() {
             onChange={(e) => setConversation(e.target.value)}
             placeholder={'Example:\nFriend: "Fine, whatever."\nMe: "Are you sure?"\nFriend: "Yes, it\'s fine." (but seemed upset)'}
             rows={5}
-            className="border border-stone-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-500 resize-none font-mono text-sm bg-white text-stone-700 placeholder:text-stone-400"
+            className="border border-emerald-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none font-mono text-sm bg-emerald-50 text-slate-700 placeholder:text-slate-400"
           />
           <button
             type="submit"
             disabled={loading || !conversation.trim()}
-            className="bg-teal-700 text-stone-100 py-3 rounded-lg hover:bg-teal-800 transition disabled:opacity-40 font-medium"
+            className="bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition disabled:opacity-40 font-medium"
           >
             {loading ? "Breaking it down…" : "Break down this conversation"}
           </button>
@@ -66,7 +66,7 @@ export default function ConversationHelper() {
         )}
 
         {result && (
-          <div className="mt-6 p-4 bg-teal-50 rounded-lg text-stone-600 whitespace-pre-wrap text-sm leading-relaxed border border-teal-200">
+          <div className="mt-6 p-4 bg-emerald-50 rounded-lg text-slate-600 whitespace-pre-wrap text-sm leading-relaxed border border-emerald-200">
             {result}
           </div>
         )}

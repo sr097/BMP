@@ -65,10 +65,10 @@ const COMMON_SITUATIONS = [
 ];
 
 const CATEGORY_COLORS: Record<string, { border: string; bg: string; header: string; chevron: string; hover: string }> = {
-  "Job Interviews":     { border: "border-slate-200",  bg: "bg-slate-50",  header: "text-slate-500",  chevron: "text-slate-400",  hover: "hover:bg-slate-50"  },
-  "Task Transitions":   { border: "border-amber-200",  bg: "bg-amber-50",  header: "text-amber-600",  chevron: "text-amber-400",  hover: "hover:bg-amber-50"  },
-  "Workplace & School": { border: "border-teal-200",   bg: "bg-teal-50",   header: "text-teal-600",   chevron: "text-teal-400",   hover: "hover:bg-teal-50"   },
-  "Social Situations":  { border: "border-indigo-200", bg: "bg-indigo-50", header: "text-indigo-600", chevron: "text-indigo-400", hover: "hover:bg-indigo-50" },
+  "Job Interviews":     { border: "border-sky-200",     bg: "bg-sky-50",     header: "text-sky-600",     chevron: "text-sky-400",     hover: "hover:bg-sky-50"     },
+  "Task Transitions":   { border: "border-teal-200",    bg: "bg-teal-50",    header: "text-teal-600",    chevron: "text-teal-400",    hover: "hover:bg-teal-50"    },
+  "Workplace & School": { border: "border-emerald-200", bg: "bg-emerald-50", header: "text-emerald-600", chevron: "text-emerald-400", hover: "hover:bg-emerald-50" },
+  "Social Situations":  { border: "border-cyan-200",    bg: "bg-cyan-50",    header: "text-cyan-600",    chevron: "text-cyan-400",    hover: "hover:bg-cyan-50"    },
 };
 
 export default function Situations() {
@@ -108,13 +108,13 @@ export default function Situations() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col items-center bg-stone-100 p-8">
-      <div className="bg-stone-50 shadow-md rounded-xl p-10 max-w-xl w-full border border-stone-200">
-        <Link href="/" className="text-slate-400 hover:text-slate-600 text-sm mb-4 block transition">
+    <main className="flex min-h-screen flex-col items-center bg-teal-50 p-8">
+      <div className="bg-white shadow-sm rounded-xl p-10 max-w-xl w-full border border-teal-100">
+        <Link href="/" className="text-teal-400 hover:text-teal-600 text-sm mb-4 block transition">
           ← Back to home
         </Link>
-        <h1 className="text-2xl font-bold mb-2 text-indigo-700">Common Situations &amp; Clear Explanations</h1>
-        <p className="text-stone-500 mb-6 text-sm leading-relaxed">
+        <h1 className="text-2xl font-bold mb-2 text-teal-700">Common Situations &amp; Clear Explanations</h1>
+        <p className="text-slate-500 mb-6 text-sm leading-relaxed">
           Tap a situation to see a clear explanation, or describe your own.
         </p>
 
@@ -148,21 +148,21 @@ export default function Situations() {
           })}
         </div>
 
-        <hr className="my-6 border-stone-200" />
+        <hr className="my-6 border-teal-100" />
 
-        <h2 className="text-lg font-semibold text-indigo-700 mb-3">Describe your own situation</h2>
+        <h2 className="text-lg font-semibold text-teal-700 mb-3">Describe your own situation</h2>
         <form onSubmit={handleCustom} className="flex flex-col gap-4">
           <textarea
             value={custom}
             onChange={(e) => setCustom(e.target.value)}
             placeholder="Describe a confusing social situation you experienced…"
             rows={3}
-            className="border border-stone-300 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-indigo-400 resize-none bg-white text-stone-700 placeholder:text-stone-400"
+            className="border border-teal-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-teal-300 resize-none bg-teal-50 text-slate-700 placeholder:text-slate-400"
           />
           <button
             type="submit"
             disabled={loading || !custom.trim()}
-            className="bg-indigo-700 text-stone-100 py-3 rounded-lg hover:bg-indigo-800 transition disabled:opacity-40 font-medium"
+            className="bg-teal-500 text-white py-3 rounded-lg hover:bg-teal-600 transition disabled:opacity-40 font-medium"
           >
             {loading ? "Thinking…" : "Explain this situation"}
           </button>
@@ -173,7 +173,7 @@ export default function Situations() {
         )}
 
         {customResult && (
-          <div className="mt-6 p-4 bg-indigo-50 rounded-lg text-stone-600 whitespace-pre-wrap text-sm leading-relaxed border border-indigo-200">
+          <div className="mt-6 p-4 bg-teal-50 rounded-lg text-slate-600 whitespace-pre-wrap text-sm leading-relaxed border border-teal-200">
             {customResult}
           </div>
         )}
