@@ -36,19 +36,19 @@ export default function Home() {
         <div className="flex flex-col gap-4">
           <Link
             href="/literalizer"
-            className="bg-sky-500 text-white py-4 rounded-xl hover:bg-sky-600 transition block font-semibold text-base shadow-sm"
+            className="bg-sky-400 text-white py-4 rounded-xl hover:bg-sky-500 transition block font-semibold text-base shadow-sm"
           >
             Fill‑in‑the‑Blank Literal Meaning Tool
           </Link>
           <Link
             href="/situations"
-            className="bg-sky-600 text-white py-4 rounded-xl hover:bg-sky-700 transition block font-semibold text-base shadow-sm"
+            className="bg-teal-500 text-white py-4 rounded-xl hover:bg-teal-600 transition block font-semibold text-base shadow-sm"
           >
             Common Situations &amp; Clear Explanations
           </Link>
           <Link
             href="/conversation-helper"
-            className="bg-sky-700 text-white py-4 rounded-xl hover:bg-sky-800 transition block font-semibold text-base shadow-sm"
+            className="bg-indigo-500 text-white py-4 rounded-xl hover:bg-indigo-600 transition block font-semibold text-base shadow-sm"
           >
             Conversation Breakdown Helper
           </Link>
