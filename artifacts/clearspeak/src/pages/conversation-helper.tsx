@@ -41,24 +41,32 @@ export default function ConversationHelper() {
           ← Back to home
         </Link>
         <h1 className="text-2xl font-bold mb-2 text-emerald-700">Conversation Breakdown Helper</h1>
-        <p className="text-slate-500 mb-6 text-sm leading-relaxed">
-          Paste or type a conversation that confused you, and we'll break it down clearly.
+        <p className="text-slate-500 mb-4 text-sm leading-relaxed">
+          Paste or type a conversation that confused you. We'll explain:
         </p>
-        <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+        <ul className="mb-6 space-y-1 text-sm text-slate-500">
+          <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">●</span> What each person <span className="font-medium text-slate-600 mx-1">actually meant</span> (not just what they said)</li>
+          <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">●</span> The <span className="font-medium text-slate-600 mx-1">tone and hidden emotions</span> behind the words</li>
+          <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">●</span> Any <span className="font-medium text-slate-600 mx-1">unspoken social rules</span> at play</li>
+          <li className="flex items-start gap-2"><span className="text-emerald-400 mt-0.5">●</span> Suggested <span className="font-medium text-slate-600 mx-1">ways to respond</span> or what to do next</li>
+        </ul>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
           <textarea
             value={conversation}
             onChange={(e) => setConversation(e.target.value)}
             placeholder={'Example:\nFriend: "Fine, whatever."\nMe: "Are you sure?"\nFriend: "Yes, it\'s fine." (but seemed upset)'}
             rows={5}
-            className="border border-emerald-200 rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none font-mono text-sm bg-emerald-50 text-slate-700 placeholder:text-slate-400"
+            className="border-2 border-emerald-200 shadow-md rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-300 resize-none font-mono text-sm bg-white text-slate-700 placeholder:text-slate-400"
           />
-          <button
-            type="submit"
-            disabled={loading || !conversation.trim()}
-            className="bg-emerald-600 text-white py-3 rounded-lg hover:bg-emerald-700 transition disabled:opacity-40 font-medium"
-          >
-            {loading ? "Breaking it down…" : "Break down this conversation"}
-          </button>
+          <div className="flex justify-center">
+            <button
+              type="submit"
+              disabled={loading || !conversation.trim()}
+              className="bg-emerald-600 text-white px-10 py-4 rounded-xl hover:bg-emerald-700 transition disabled:opacity-40 font-semibold text-base shadow-sm"
+            >
+              {loading ? "Breaking it down…" : "Break down this conversation"}
+            </button>
+          </div>
         </form>
 
         {error && (
