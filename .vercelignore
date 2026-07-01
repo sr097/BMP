@@ -1,0 +1,15 @@
+node_modules
+.next
+.env
+.env.local
+.git
+.migration-backup
+.replit
+replit.md
+artifacts/api-server
+artifacts/clearspeak-mobile
+artifacts/mockup-sandbox
+scripts
+static-build
+lib
+tsconfig.base.json

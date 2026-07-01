@@ -128,24 +128,41 @@ pnpm --filter @workspace/api-server run test:coverage
 
 ## 📦 Deployment
 
-### Building for Production
+### Frontend (Vercel)
 
+The frontend can be deployed to Vercel:
+
+1. **Install Vercel CLI** (optional):
 ```bash
-pnpm run build
+npm i -g vercel
 ```
 
-This will:
-1. Typecheck all packages
-2. Build all artifacts (API server, web app, mobile app)
+2. **Deploy to Vercel**:
+```bash
+vercel
+```
 
-### Environment Variables
+Or connect your GitHub repository to Vercel for automatic deployments.
 
-Required for production:
-- `GROQ_API_KEY` - Groq API key for AI responses
-- `PORT` - API server port (default: 8080)
-- `VITE_API_URL` - Frontend API URL (for production deployments, defaults to http://localhost:8080)
-- `DATABASE_URL` - PostgreSQL connection string (optional)
-- `REPL_ID` - Replit ID for OIDC authentication (optional)
+**Required Environment Variables:**
+- `VITE_API_URL` - Your API server URL (e.g., https://your-api-server.vercel.app)
+
+### Backend (API Server)
+
+The API server should be deployed separately:
+
+**Options:**
+- **Vercel Serverless Functions**: Convert Express to serverless functions
+- **Railway**: Easy deployment with PostgreSQL
+- **Render**: Free tier available
+- **DigitalOcean App Platform**
+- **Heroku** (paid)
+
+**Example Railway deployment:**
+1. Create a new project on Railway
+2. Add PostgreSQL database
+3. Set environment variables (`GROQ_API_KEY`, `DATABASE_URL`, `PORT`)
+4. Deploy the `artifacts/api-server` directory
 
 ## 🤝 Contributing
 
