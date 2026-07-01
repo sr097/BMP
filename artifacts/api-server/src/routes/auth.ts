@@ -6,7 +6,7 @@ import {
   ExchangeMobileAuthorizationCodeResponse,
   LogoutMobileSessionResponse,
 } from "@workspace/api-zod";
-import { db, usersTable } from "@workspace/db";
+import { db, usersTable, dbAvailable } from "@workspace/db";
 import {
   clearSession,
   getOidcConfig,
@@ -62,6 +62,18 @@ function getSafeReturnTo(value: unknown): string {
 }
 
 async function upsertUser(claims: Record<string, unknown>) {
+  if (!dbAvailable || !db) {
+    return {
+      id: claims.sub as string,
+      email: (claims.email as string) || null,
+      firstName: (claims.first_name as string) || null,
+      lastName: (claims.last_name as string) || null,
+      profileImageUrl: (claims.profile_image_url || claims.picture) as
+        | string
+        | null,
+    };
+  }
+
   const userData = {
     id: claims.sub as string,
     email: (claims.email as string) || null,
@@ -72,18 +84,23 @@ async function upsertUser(claims: Record<string, unknown>) {
       | null,
   };
 
-  const [user] = await db
-    .insert(usersTable)
-    .values(userData)
-    .onConflictDoUpdate({
-      target: usersTable.id,
-      set: {
-        ...userData,
-        updatedAt: new Date(),
-      },
-    })
-    .returning();
-  return user;
+  try {
+    const [user] = await db
+      .insert(usersTable)
+      .values(userData)
+      .onConflictDoUpdate({
+        target: usersTable.id,
+        set: {
+          ...userData,
+          updatedAt: new Date(),
+        },
+      })
+      .returning();
+    return user;
+  } catch (err) {
+    console.warn("Database upsert failed, returning mock user:", err);
+    return userData;
+  }
 }
 
 router.get("/auth/user", (req: Request, res: Response) => {
@@ -92,6 +109,43 @@ router.get("/auth/user", (req: Request, res: Response) => {
       user: req.isAuthenticated() ? req.user : null,
     }),
   );
+});
+
+// Simple mock login for development (no database required)
+router.post("/auth/mock-login", async (req: Request, res: Response) => {
+  try {
+    const { username } = req.body;
+    
+    if (!username || typeof username !== "string" || username.trim().length === 0) {
+      res.status(400).json({ error: "Username is required" });
+      return;
+    }
+
+    const mockUser = {
+      id: `mock-${username}`,
+      email: `${username}@example.com`,
+      firstName: username,
+      lastName: "User",
+      profileImageUrl: null,
+    };
+
+    const sessionData: SessionData = {
+      user: mockUser,
+      access_token: "mock-token",
+      expires_at: Math.floor(Date.now() / 1000) + SESSION_TTL / 1000,
+    };
+
+    const sid = await createSession(sessionData);
+    setSessionCookie(res, sid);
+
+    res.json({
+      success: true,
+      user: mockUser,
+    });
+  } catch (err) {
+    req.log.error({ err }, "Mock login failed");
+    res.status(400).json({ error: "Invalid request" });
+  }
 });
 
 router.get("/login", async (req: Request, res: Response) => {

@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Switch, Route, Router as WouterRouter } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
@@ -23,7 +24,28 @@ function Router() {
   );
 }
 
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
+function LoginScreen({ onLogin }: { onLogin: (username: string) => Promise<void> }) {
+  const [username, setUsername] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!username.trim()) {
+      setError("Please enter a username");
+      return;
+    }
+    setIsLoading(true);
+    setError("");
+    try {
+      await onLogin(username);
+    } catch (err) {
+      setError("Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-sky-50 p-8">
       <div className="bg-white shadow-sm rounded-2xl px-10 py-12 max-w-sm w-full text-center border border-sky-100">
@@ -40,18 +62,37 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
         </div>
         <h1 className="text-3xl font-bold text-sky-700 mb-2 tracking-tight">ClearSpeak AI</h1>
         <p className="text-sky-500 font-medium mb-2 text-sm">Clear explanations for confusing moments.</p>
-        <p className="text-slate-400 text-sm mb-8 leading-relaxed">
-          Sign in with your Google account to access your tools. Your conversations stay private.
+        <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+          Sign in to access your tools. (Mock login for development)
         </p>
-        <button
-          onClick={onLogin}
-          className="w-full bg-sky-500 text-white py-4 rounded-xl hover:bg-sky-600 transition font-semibold text-base shadow-sm flex items-center justify-center gap-2"
-        >
-          <svg width="20" height="20" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#fff" d="M44.5 20H24v8.5h11.8C34.7 33.9 30.1 37 24 37c-7.2 0-13-5.8-13-13s5.8-13 13-13c3.1 0 5.9 1.1 8.1 2.9l6.4-6.4C34.6 5.1 29.6 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21c10.5 0 20-7.6 20-21 0-1.3-.2-2.7-.5-4z"/>
-          </svg>
-          Sign in with Google
-        </button>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            placeholder="Enter your username"
+            className="w-full px-4 py-3 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-sky-500 text-sm"
+            disabled={isLoading}
+          />
+          {error && <p className="text-red-500 text-sm">{error}</p>}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-sky-500 text-white py-4 rounded-xl hover:bg-sky-600 transition font-semibold text-base shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isLoading ? (
+              "Signing in..."
+            ) : (
+              <>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                  <circle cx="12" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+                Sign In
+              </>
+            )}
+          </button>
+        </form>
       </div>
     </main>
   );

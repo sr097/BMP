@@ -85,9 +85,11 @@ export default function ConversationHelper() {
     setError("");
     setResult("");
     try {
-      const res = await fetch("/api/llm", {
+      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
+      const res = await fetch(`${apiUrl}/api/llm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify({ prompt }),
       });
       if (!res.ok) {

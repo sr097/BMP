@@ -1,7 +1,7 @@
 import * as client from "openid-client";
 import crypto from "crypto";
 import { type Request, type Response } from "express";
-import { db, sessionsTable } from "@workspace/db";
+import { db, sessionsTable, dbAvailable } from "@workspace/db";
 import { eq } from "drizzle-orm";
 import type { AuthUser } from "@workspace/api-zod";
 
@@ -18,6 +18,9 @@ export interface SessionData {
 
 let oidcConfig: client.Configuration | null = null;
 
+// In-memory session store for development without database
+const inMemorySessions = new Map<string, { data: SessionData; expires: Date }>();
+
 export async function getOidcConfig(): Promise<client.Configuration> {
   if (!oidcConfig) {
     oidcConfig = await client.discovery(
@@ -30,43 +33,100 @@ export async function getOidcConfig(): Promise<client.Configuration> {
 
 export async function createSession(data: SessionData): Promise<string> {
   const sid = crypto.randomBytes(32).toString("hex");
-  await db.insert(sessionsTable).values({
-    sid,
-    sess: data as unknown as Record<string, unknown>,
-    expire: new Date(Date.now() + SESSION_TTL),
-  });
+  
+  if (dbAvailable && db) {
+    try {
+      await db.insert(sessionsTable).values({
+        sid,
+        sess: data as unknown as Record<string, unknown>,
+        expire: new Date(Date.now() + SESSION_TTL),
+      });
+    } catch (err) {
+      console.warn("Database insert failed, using in-memory fallback:", err);
+      inMemorySessions.set(sid, {
+        data,
+        expires: new Date(Date.now() + SESSION_TTL),
+      });
+    }
+  } else {
+    // Use in-memory storage
+    inMemorySessions.set(sid, {
+      data,
+      expires: new Date(Date.now() + SESSION_TTL),
+    });
+  }
+  
   return sid;
 }
 
 export async function getSession(sid: string): Promise<SessionData | null> {
-  const [row] = await db
-    .select()
-    .from(sessionsTable)
-    .where(eq(sessionsTable.sid, sid));
+  if (dbAvailable && db) {
+    try {
+      const [row] = await db
+        .select()
+        .from(sessionsTable)
+        .where(eq(sessionsTable.sid, sid));
 
-  if (!row || row.expire < new Date()) {
-    if (row) await deleteSession(sid);
+      if (!row || row.expire < new Date()) {
+        if (row) await deleteSession(sid);
+        return null;
+      }
+
+      return row.sess as unknown as SessionData;
+    } catch (err) {
+      console.warn("Database query failed, checking in-memory fallback:", err);
+      // Fall through to in-memory check
+    }
+  }
+  
+  // Use in-memory storage
+  const session = inMemorySessions.get(sid);
+  if (!session || session.expires < new Date()) {
+    if (session) await deleteSession(sid);
     return null;
   }
-
-  return row.sess as unknown as SessionData;
+  return session.data;
 }
 
 export async function updateSession(
   sid: string,
   data: SessionData,
 ): Promise<void> {
-  await db
-    .update(sessionsTable)
-    .set({
-      sess: data as unknown as Record<string, unknown>,
-      expire: new Date(Date.now() + SESSION_TTL),
-    })
-    .where(eq(sessionsTable.sid, sid));
+  if (dbAvailable && db) {
+    try {
+      await db
+        .update(sessionsTable)
+        .set({
+          sess: data as unknown as Record<string, unknown>,
+          expire: new Date(Date.now() + SESSION_TTL),
+        })
+        .where(eq(sessionsTable.sid, sid));
+    } catch (err) {
+      console.warn("Database update failed, using in-memory fallback:", err);
+      // Fall through to in-memory update
+    }
+  }
+  
+  // Use in-memory storage
+  const session = inMemorySessions.get(sid);
+  if (session) {
+    session.data = data;
+    session.expires = new Date(Date.now() + SESSION_TTL);
+  }
 }
 
 export async function deleteSession(sid: string): Promise<void> {
-  await db.delete(sessionsTable).where(eq(sessionsTable.sid, sid));
+  if (dbAvailable && db) {
+    try {
+      await db.delete(sessionsTable).where(eq(sessionsTable.sid, sid));
+    } catch (err) {
+      console.warn("Database delete failed, using in-memory fallback:", err);
+      // Fall through to in-memory delete
+    }
+  }
+  
+  // Use in-memory storage
+  inMemorySessions.delete(sid);
 }
 
 export async function clearSession(
