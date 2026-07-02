@@ -14,27 +14,45 @@ export default function Literalizer() {
     setError("");
     setResult("");
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
-      const res = await fetch(`${apiUrl}/api/llm`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          prompt: `A teen with autism is trying to understand this figurative phrase: "${phrase}"\n\nExplain what it LITERALLY means versus what it ACTUALLY means in plain, simple language. Format your answer clearly with two parts:\n1. What it sounds like it means (literally)\n2. What it actually means`,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        setError(
-          data?.response || `Request failed (${res.status}). Please try again.`,
-        );
+      const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+      if (!groqApiKey) {
+        setError("AI is not configured. Please add VITE_GROQ_API_KEY to your environment.");
         return;
       }
+
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${groqApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant that explains figurative language, social situations, and conversations clearly and simply for autistic teens. Use plain language, be direct and specific, and avoid sarcasm or idioms in your explanations.",
+            },
+            {
+              role: "user",
+              content: `A teen with autism is trying to understand this figurative phrase: "${phrase}"\n\nExplain what it LITERALLY means versus what it ACTUALLY means in plain, simple language. Format your answer clearly with two parts:\n1. What it sounds like it means (literally)\n2. What it actually means`,
+            },
+          ],
+          max_tokens: 500,
+        }),
+      });
+
+      if (!res.ok) {
+        setError(`Request failed (${res.status}). Please try again.`);
+        return;
+      }
+
       const data = await res.json();
-      if (data.success) {
-        setResult(data.response);
+      const responseText = data.choices?.[0]?.message?.content;
+      if (responseText) {
+        setResult(responseText);
       } else {
-        setError(data.response || "Something went wrong. Please try again.");
+        setError("No response received. Please try again.");
       }
     } catch {
       setError(

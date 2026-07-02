@@ -140,27 +140,45 @@ export default function Situations() {
     setError("");
     setCustomResult("");
     try {
-      const apiUrl = import.meta.env.VITE_API_URL || "http://localhost:8080";
-      const res = await fetch(`${apiUrl}/api/llm`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({
-          prompt: `An autistic teen encountered this social situation: "${custom}"\n\nExplain clearly and simply:\n1. What is likely happening socially\n2. How the other person probably feels\n3. What would be a good response or action`,
-        }),
-      });
-      if (!res.ok) {
-        const data = await res.json().catch(() => null);
-        setError(
-          data?.response || `Request failed (${res.status}). Please try again.`,
-        );
+      const groqApiKey = import.meta.env.VITE_GROQ_API_KEY;
+      if (!groqApiKey) {
+        setError("AI is not configured. Please add VITE_GROQ_API_KEY to your environment.");
         return;
       }
+
+      const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${groqApiKey}`,
+        },
+        body: JSON.stringify({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            {
+              role: "system",
+              content: "You are a helpful assistant that explains figurative language, social situations, and conversations clearly and simply for autistic teens. Use plain language, be direct and specific, and avoid sarcasm or idioms in your explanations.",
+            },
+            {
+              role: "user",
+              content: `An autistic teen encountered this social situation: "${custom}"\n\nExplain clearly and simply:\n1. What is likely happening socially\n2. How the other person probably feels\n3. What would be a good response or action`,
+            },
+          ],
+          max_tokens: 500,
+        }),
+      });
+
+      if (!res.ok) {
+        setError(`Request failed (${res.status}). Please try again.`);
+        return;
+      }
+
       const data = await res.json();
-      if (data.success) {
-        setCustomResult(data.response);
+      const responseText = data.choices?.[0]?.message?.content;
+      if (responseText) {
+        setCustomResult(responseText);
       } else {
-        setError(data.response || "Something went wrong. Please try again.");
+        setError("No response received. Please try again.");
       }
     } catch {
       setError(
