@@ -12,3 +12,4 @@ artifacts/mockup-sandbox
 scripts
 static-build
 /lib
+.vercel
