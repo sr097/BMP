@@ -7,6 +7,7 @@ import Home from "@/pages/home";
 import Literalizer from "@/pages/literalizer";
 import Situations from "@/pages/situations";
 import ConversationHelper from "@/pages/conversation-helper";
+import ContextualAnalyzer from "@/pages/contextual-analyzer";
 
 const queryClient = new QueryClient();
 
@@ -17,6 +18,7 @@ function Router() {
       <Route path="/literalizer" component={Literalizer} />
       <Route path="/situations" component={Situations} />
       <Route path="/conversation-helper" component={ConversationHelper} />
+      <Route path="/contextual-analyzer" component={ContextualAnalyzer} />
       <Route component={NotFound} />
     </Switch>
   );
